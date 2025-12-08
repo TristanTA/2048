@@ -6,7 +6,7 @@ def main():
     session = Session()
     while session.alive:
         session.display_grid()
-        user_input = int(input("Move: "))
+        user_input = input("Move: ")
         session.step(move = user_input)
 
 if __name__ == "__main__":

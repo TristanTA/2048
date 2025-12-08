@@ -83,17 +83,21 @@ class Session:
             row = grid[row_start : row_start + self.x_grid]
             print(row)
 
-    def step(self, move: int):
-        if move == 0: # Up
-            self.move_squares_up()
-        elif move == 1: # Left
-            self.move_squares_left()
-        elif move == 2: # Down
-            self.move_squares_down()
-        elif move == 3: # Right
-            self.move_squares_right()
-        self.combine_squares()
-        self.add_square()
+    def step(self, move):
+        try:
+            if int(move) in [0, 1, 2, 3]:
+                if move == 0: # Up
+                    self.move_squares_up()
+                elif move == 1: # Left
+                    self.move_squares_left()
+                elif move == 2: # Down
+                    self.move_squares_down()
+                elif move == 3: # Right
+                    self.move_squares_right()
+                self.combine_squares()
+                self.add_square()
+        except:
+            print("Invalid move. Use 0 (Up), 1 (Left), 2 (Down), or 3 (Right).")
 
     def get_square_at(self, x, y):
         for sq in self.values:
