@@ -8,9 +8,10 @@ class Session:
         self.x_grid = 4
         self.y_grid = 4
         self.values = None
-        self.add_square()
-        self.add_square()
         self.alive = True
+        self.score = 0
+        self.add_square()
+        self.add_square()
 
     def add_square(self):
         if not self.values: 
@@ -27,26 +28,25 @@ class Session:
             self.values.append(square)
 
     def get_open_position(self):
-        try:
-            if not self.values: 
-                return random.choice(range(self.x_grid * self.y_grid))
-            else:
-                occupied_squares = []
-                for square in self.values:
-                    position = self.get_position(square=square) 
-                    occupied_squares.append(position)
-                all_squares = []
-                for i in range(self.x_grid * self.y_grid):
-                    all_squares.append(i)
-                for pos in occupied_squares:
+        if self.alive:
+            occupied_squares = []
+            for square in self.values:
+                position = self.get_position(square=square) 
+                occupied_squares.append(position)
+            if len(occupied_squares) >= self.x_grid * self.y_grid:
+                print("No open positions available.")
+                print("Game Over!")
+                self.alive = False
+                return -1
+            all_squares = []
+            for i in range(self.x_grid * self.y_grid):
+                all_squares.append(i)
+            for pos in set(occupied_squares):
+                if pos in all_squares:
                     all_squares.remove(pos)
+            else:
                 open_position = random.choice(all_squares)
                 return open_position
-        except:
-            print("No open positions available.")
-            print("Game Over!")
-            self.alive = False
-            return -1
 
     def get_position(self, square: Square) -> int:
         position = (
@@ -84,19 +84,23 @@ class Session:
             print(row)
 
     def step(self, move):
-        try:
-            if int(move) in [0, 1, 2, 3]:
-                if move == 0: # Up
-                    self.move_squares_up()
-                elif move == 1: # Left
-                    self.move_squares_left()
-                elif move == 2: # Down
-                    self.move_squares_down()
-                elif move == 3: # Right
-                    self.move_squares_right()
-                self.combine_squares()
-                self.add_square()
-        except:
+        if not self.alive:
+            return
+        if int(move) in [0, 1, 2, 3]:
+            if move == 0: # Up
+                self.move_squares_up()
+            elif move == 1: # Left
+                self.move_squares_left()
+            elif move == 2: # Down
+                self.move_squares_down()
+            elif move == 3: # Right
+                self.move_squares_right()
+            self.combine_squares()
+            self.add_square()
+            print(f"Score: {self.get_score()}")
+            if self.check_game_over():
+                self.alive = False
+        else:
             print("Invalid move. Use 0 (Up), 1 (Left), 2 (Down), or 3 (Right).")
 
     def get_square_at(self, x, y):
@@ -206,3 +210,24 @@ class Session:
                 new_values.extend(squares[1:])
 
         self.values = new_values
+
+    def check_game_over(self):
+        if len(self.values) < self.x_grid * self.y_grid:
+            return False
+
+        for sq in self.values:
+            right = self.get_square_at(sq.x + 1, sq.y)
+            if right and right.value == sq.value:
+                return False
+
+        for sq in self.values:
+            down = self.get_square_at(sq.x, sq.y + 1)
+            if down and down.value == sq.value:
+                return False
+
+        return True
+
+    def get_score(self):
+        self.score = 0
+        for sq in self.values:
+            self.score += sq.value
