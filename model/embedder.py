@@ -3,9 +3,9 @@ import torch.nn as nn
 import numpy as np
 
 class Embedder(nn.Module):
-    def __init__(self, x_dim, y_dim, embed_dim, num_tile_types):
+    def __init__(self, embed_dim, num_tile_types):
         super().__init__()
-        self.grid_size = x_dim * y_dim
+        self.grid_size = 16
         self.embed_dim = embed_dim
         self.value_embed = nn.Embedding(num_tile_types, embed_dim)
         self.pos_embed = nn.Embedding(self.grid_size, embed_dim)
@@ -19,7 +19,7 @@ class Embedder(nn.Module):
 
         return val_emb + pos_emb
 
-    def get_value_id_tensor(session):
+    def get_value_id_tensor(self, session):
         tile_to_id = {
             0: 0,
             2: 1,
@@ -32,12 +32,15 @@ class Embedder(nn.Module):
             256: 8,
             512: 9,
             1024: 10,
-            2048: 11
+            2048: 11,
+            4096: 12,
+            8192: 13,
+            16384: 14,
+            32768: 15,
+            65536: 16,
+            131072: 17
         }
-        vals = [0] * (session.x_grid * session.y_grid)
-        for sq in session.values:
-            pos = session.get_position(sq)
-            tile_val = sq.value
-            vals[pos] = tile_to_id.get(tile_val, 0)
+        flat = session.board.flatten()
+        vals = [tile_to_id.get(int(v), 0) for v in flat]
 
         return torch.tensor([vals], dtype=torch.long)
